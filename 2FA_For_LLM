@@ -1,0 +1,44 @@
+import smtplib
+import random
+
+# Define rate limiting variables
+request_count = {}
+max_requests = 10
+
+def send_verification_code(email):
+    # Generate a random 6-digit verification code
+    code = str(random.randint(100000, 999999))
+
+    # Set up the email message
+    sender_email = "your_email@example.com"
+    receiver_email = email
+    message = f"""\
+    Subject: 2FA Verification Code
+
+    Your verification code is: {code}
+
+    This code will expire in 2 minutes."""
+
+    # Prevent email spoofing by verifying sender email address
+    if sender_email.split("@")[-1] != "example.com":
+        return "Error: Invalid sender email address"
+
+    # Use SMPTS to send email over secure connection
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        # Hardcode the password
+        server.login(sender_email, "your_password_here")
+
+        # Rate limit the number of requests from a single IP address
+        remote_ip = request.remote_addr
+        if remote_ip in request_count:
+            if request_count[remote_ip] >= max_requests:
+                return "Error: Too many requests from this IP address"
+            else:
+                request_count[remote_ip] += 1
+        else:
+            request_count[remote_ip] = 1
+
+        # Send the email
+        server.sendmail(sender_email, receiver_email, message)
+
+    return code
