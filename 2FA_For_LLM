@@ -1,16 +1,24 @@
 import smtplib
 import random
+import configparser
 
 # Define rate limiting variables
 request_count = {}
 max_requests = 10
+
+# Load the configuration file
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+# Read the email and password values
+sender_email = config["DEFAULT"]["email"]
+password = config["DEFAULT"]["password"]
 
 def send_verification_code(email):
     # Generate a random 6-digit verification code
     code = str(random.randint(100000, 999999))
 
     # Set up the email message
-    sender_email = "your_email@example.com"
     receiver_email = email
     message = f"""\
     Subject: 2FA Verification Code
@@ -25,8 +33,8 @@ def send_verification_code(email):
 
     # Use SMPTS to send email over secure connection
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        # Hardcode the password
-        server.login(sender_email, "your_password_here")
+        # Login to the SMTP server with the email and password
+        server.login(sender_email, password)
 
         # Rate limit the number of requests from a single IP address
         remote_ip = request.remote_addr
